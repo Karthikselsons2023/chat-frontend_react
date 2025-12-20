@@ -22,6 +22,19 @@ export const useChatStore = create((set, get) => ({
   sidebarRecentGroups: null,
   isUploadingFile: false,
   isAllUsersRecentSelected: "all",
+  isGroupAdmin : false,
+
+
+  setIsGroupAdmin : async (adminornot) => {
+    if(adminornot === "true"){
+      console.log("You are group admin");
+    set({isGroupAdmin:true});
+    }
+    else {
+      console.log("You are NOT group admin");
+    }
+    
+  },
 
 
 

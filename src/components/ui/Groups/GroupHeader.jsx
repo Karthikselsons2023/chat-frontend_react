@@ -4,7 +4,7 @@ import { useChatStore } from "../../../store/useChatStore";
 import { useAuthStore } from "../../../store/useAuthStore";
 
 const GroupHeader = () => {
-  const { onlineUsers } = useAuthStore();
+  const { onlineUsers , authUser} = useAuthStore();
   const [open, setOpen] = useState(false);
 
   const {
@@ -13,15 +13,32 @@ const GroupHeader = () => {
     setSelectedGroupId,
     setGroupInfo,
     selectedGroupId,
+    isGroupAdmin,
+    setIsGroupAdmin
   } = useChatStore();
 
   useEffect(() => {
     setGroupInfo();
   }, [selectedGroupId]);
 
+    useEffect(() => {
+  if (!groupInfo || !authUser) return;
+
+  const isAdmin = groupInfo.chat_users.some(
+    (u) => u.user_id === authUser.user_id && u.group_admin === true
+  );
+  if(isAdmin){
+    setIsGroupAdmin("true");
+  }
+  
+}, [groupInfo, authUser]);
+
   if (!groupInfo) {
     return <div className="p-3 text-sm text-gray-500">Fetching group details…</div>;
   }
+
+
+
 
   console.log(groupInfo)
 
@@ -91,7 +108,7 @@ const GroupHeader = () => {
 
           <button
             onClick={() => setOpen(false)}
-            className="absolute right-3 top-3 text-gray-500 hover:text-black transition"
+            className="absolute right-3 top-3 cursor-pointer text-gray-500 hover:text-black transition"
           >
             <X size={20} />
           </button>
@@ -102,7 +119,7 @@ const GroupHeader = () => {
           </h3>
 
 
-          <div className="mt-4 flex sm:flex-row flex-col  items-center gap-4">
+          <div className="mt-4 flex sm:flex-row gap-4 sm:gap-6 flex-col  items-center">
 
             <div>
               <img
@@ -120,10 +137,13 @@ const GroupHeader = () => {
               </p>
               <div>
                 <input
-                  className="flex cursor-not-allowed items-center gap-2 text-sm h-8 rounded-md w-70 sm:w-100  mt-1 border-2 border-gray-300 bg-white px-3 text-black focus-within:border-[#b766f9]"
+                  className={`flex items-center gap-2 text-sm h-8 rounded-md w-80 sm:w-100 mt-1 border-2 border-gray-300 bg-white px-3 text-black focus-within:border-[#b766f9]
+    ${!isGroupAdmin ? "cursor-not-allowed opacity-60" : ""}
+  `}
                   defaultValue={groupInfo.group_name}
-                  disabled={true}
+                  disabled={!isGroupAdmin}
                 />
+
               </div>
 
 
@@ -132,11 +152,17 @@ const GroupHeader = () => {
               </p>
               <div>
                 <input
-                  className="flex items-center cursor-not-allowed gap-2  text-sm h-8  rounded-md w-70 sm:w-100   mt-1 border-2 border-gray-300 bg-white px-3 text-black focus-within:border-[#b766f9]"
+                  className={`flex items-center gap-2 text-sm h-8 rounded-md w-80 sm:w-100 mt-1 border-2 border-gray-300 bg-white px-3 text-black focus-within:border-[#b766f9]
+    ${!isGroupAdmin ? "cursor-not-allowed opacity-60" : ""}
+  `}
                   defaultValue={groupInfo.group_description}
-                  disabled={true}
+                  disabled={!isGroupAdmin}
                 />
               </div>
+
+              <button disabled={!isGroupAdmin} className={`w-full bg-[#6200B3] p-1 rounded-md mt-3 text-sm text-white ${!isGroupAdmin ? " cursor-not-allowed bg-[#656565]" : " hover:bg-[#3e0071] cursor-pointer "}`}>
+                Save
+              </button>
 
               {/* <p className="text-sm text-gray-500">
                 {groupInfo.chat_users?.length || 0} members
@@ -156,8 +182,9 @@ const GroupHeader = () => {
               {groupInfo?.chat_users.map((user) => (
                 <div
                   key={user.user_id}
-                  className="border-b-2 border-[#ebebeb68] flex items-center gap-3 p-2 rounded-md hover:bg-gray-100"
+                  className="border-b-2 border-[#ebebeb68] flex items-center gap-3 p-2 rounded-md hover:bg-[##F1E0FF]"
                 >
+                 
                   <img
                     src={user.user.profile}
                     className="h-8 w-8 rounded-full object-cover"

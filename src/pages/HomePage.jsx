@@ -53,7 +53,7 @@ export default function HomePage() {
           <div className="flex items-center justify-center gap-3 w-full text-gray-400 nochatbg flex-col">
             <MessageSquareHeart
               size={60}
-              className="text-[#668AFF]"
+              className="text-[#6200B3]"
               style={{
                 animation: "float 3s ease-in-out infinite",
               }}
@@ -67,7 +67,7 @@ export default function HomePage() {
 }
 `}
             </style>
-            <h1 className="inter-large text-[#668AFF] text-2xl">
+            <h1 className="inter-large text-[#6200B3] text-2xl">
               Select a Contact to Chat!
             </h1>
           </div>
