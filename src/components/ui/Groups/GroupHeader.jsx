@@ -160,10 +160,14 @@ const GroupHeader = () => {
                 />
               </div>
 
-              <button disabled={!isGroupAdmin} className={`w-full bg-[#6200B3] p-1 rounded-md mt-3 text-sm text-white ${!isGroupAdmin ? " cursor-not-allowed bg-[#656565]" : " hover:bg-[#3e0071] cursor-pointer "}`}>
+             <div className="flex flex-row gap-2 mt-1">
+               <button disabled={!isGroupAdmin} className={`w-full bg-[#6200B3] p-1 rounded-md mt-3 text-sm text-white ${!isGroupAdmin ? " cursor-not-allowed bg-[#656565]" : " hover:bg-[#3e0071] cursor-pointer "}`}>
                 Save
               </button>
-
+              <button  className={`w-full cursor-pointer bg-[#e32b0a] hover:bg-[#9b1f09] p-1 rounded-md mt-3 text-sm text-white `}>
+                Leave Group
+              </button>
+             </div>
               {/* <p className="text-sm text-gray-500">
                 {groupInfo.chat_users?.length || 0} members
               </p> */}

@@ -72,7 +72,7 @@ const RecentGroup = () => {
 
                             <p className="text-sm text-gray-500 truncate">
                                 {/* {lastMessage?.message_text || "No messages yet"} */}
-                                {authUser.user_id === group.ChatMessages?.[0]?.user_id ? `You : ${lastMessage?.message_text}` : lastMessage?.message_text}
+                                {authUser.user_id === group.ChatMessages?.[0]?.user_id ? `You : ${lastMessage?.message_text}` : ` ${lastMessage?.user?.name} : ${lastMessage?.message_text}`}
                             </p>
                         </div>
                     </button>
