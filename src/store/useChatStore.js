@@ -25,6 +25,23 @@ export const useChatStore = create((set, get) => ({
   isAllUsersRecentSelected: "all",
   isGroupAdmin : false,
   fetchingGroupMessages: false,
+  isAddingMembers : false,
+
+
+  setIsAddingMembers: async (value) => {
+    set({isAddingMembers: value});
+  },
+
+
+  addMembers : async (payload) => {
+    try {
+      const res = await axiosInstance.post("/chat/groupaddpeople",payload);
+      const result = res.data;
+      
+    } catch (error) {
+      console.log("error while adding new members to group: ", error);
+    }
+  },
 
 
   setIsGroupAdmin : async (adminornot) => {

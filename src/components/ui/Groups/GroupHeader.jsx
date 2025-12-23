@@ -3,10 +3,14 @@ import { X } from "lucide-react";
 import { useChatStore } from "../../../store/useChatStore";
 import { useAuthStore } from "../../../store/useAuthStore";
 import { Plus } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 const GroupHeader = () => {
-  const { onlineUsers , authUser} = useAuthStore();
+  const { onlineUsers, authUser, allUsers } = useAuthStore();
   const [open, setOpen] = useState(false);
+  const [openNewMembersPanel, setOpenNewMembersPanel] = useState(false);
+  const [selectedUserIds, setSelectedUserIds] = useState([]);
+  const [isAddingMembers, setIsAddingMembers] = useState(false);
 
   const {
     groupInfo,
@@ -15,31 +19,66 @@ const GroupHeader = () => {
     setGroupInfo,
     selectedGroupId,
     isGroupAdmin,
-    setIsGroupAdmin
-  } = useChatStore();
+    setIsGroupAdmin,
+    addMembers,
+    } = useChatStore();
 
   useEffect(() => {
     setGroupInfo();
-  }, [selectedGroupId]);
+  }, [selectedGroupId,isAddingMembers]);
 
-    useEffect(() => {
-  if (!groupInfo || !authUser) return;
+  useEffect(() => {
+    if (!groupInfo || !authUser) return;
 
-  const isAdmin = groupInfo.chat_users.some(
-    (u) => u.user_id === authUser.user_id && u.group_admin === true
+    const isAdmin = groupInfo.chat_users.some(
+      (u) => u.user_id === authUser.user_id && u.group_admin === true
+    );
+    if (isAdmin) {
+      setIsGroupAdmin("true");
+    }
+
+  }, [groupInfo, authUser]);
+
+
+
+
+  const groupUserIds = new Set(
+    groupInfo?.chat_users?.map((u) => u.user_id)
   );
-  if(isAdmin){
-    setIsGroupAdmin("true");
-  }
-  
-}, [groupInfo, authUser]);
+
+  const usersNotInGroup = allUsers?.filter(
+    (user) => !groupUserIds.has(user.user_id)
+  );
+
+  const toggleUserSelection = (userId) => {
+    setSelectedUserIds((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
 
   if (!groupInfo) {
     return <div className="p-3 text-sm text-gray-500">Fetching group details…</div>;
   }
 
+  const handleAddMember = async (e) => {
+    setIsAddingMembers(true);
+    e.preventDefault();
+    // console.log(selectedUserIds);
+    const addMemberPayload = {
+      auth_id : authUser.user_id,
+      user_id : selectedUserIds,
+      chat_id : selectedGroupId
+    }
+    console.log("payload add members: ", addMemberPayload);
 
+    await addMembers(addMemberPayload);
 
+    setIsAddingMembers(false);
+    setOpenNewMembersPanel(false);
+  }
 
   // console.log(groupInfo)
 
@@ -83,7 +122,7 @@ const GroupHeader = () => {
 
 
       <div
-        className={`fixed inset-0 z-50 flex items-center inter-large justify-center
+        className={`fixed inset-0 z-50  flex items-center inter-large justify-center
           transition-all duration-300
           ${open ? "pointer-events-auto" : "pointer-events-none"}
         `}
@@ -92,7 +131,7 @@ const GroupHeader = () => {
         <div
           onClick={() => setOpen(false)}
           className={`
-            absolute inset-0 bg-black/40
+            absolute inset-0 bg-black/40 
             transition-all duration-300
             ${open ? "opacity-100 backdrop-blur-sm" : "opacity-0 backdrop-blur-0"}
           `}
@@ -101,7 +140,7 @@ const GroupHeader = () => {
 
         <div
           className={`
-            relative z-10 w-140  mx-4 rounded-xl bg-white p-6 shadow-xl
+            relative z-10 w-140 h-[90vh] mx-4 rounded-xl bg-white p-6 shadow-xl
             transform transition-all duration-300 ease-out
             ${open ? "scale-100 opacity-100" : "scale-95 opacity-0"}
           `}
@@ -113,6 +152,8 @@ const GroupHeader = () => {
           >
             <X size={20} />
           </button>
+
+
 
 
           <h3 className="text-lg inter-very-large font-bold text-[#6200B3]">
@@ -161,14 +202,14 @@ const GroupHeader = () => {
                 />
               </div>
 
-             <div className="flex flex-row gap-2 mt-1">
-               <button disabled={!isGroupAdmin} className={`w-full bg-[#6200B3] p-1 rounded-md mt-3 text-sm text-white ${!isGroupAdmin ? " cursor-not-allowed bg-[#656565]" : " hover:bg-[#3e0071] cursor-pointer "}`}>
-                Save
-              </button>
-              <button  className={`w-full cursor-pointer bg-[#e32b0a] hover:bg-[#9b1f09] p-1 rounded-md mt-3 text-sm text-white `}>
-                Leave Group
-              </button>
-             </div>
+              <div className="flex flex-row gap-2 mt-1">
+                <button disabled={!isGroupAdmin} className={`w-full bg-[#6200B3] p-1 rounded-md mt-3 text-sm text-white ${!isGroupAdmin ? " cursor-not-allowed bg-[#656565]" : " hover:bg-[#3e0071] cursor-pointer "}`}>
+                  Save
+                </button>
+                <button className={`w-full cursor-pointer bg-[#e32b0a] hover:bg-[#9b1f09] p-1 rounded-md mt-3 text-sm text-white `}>
+                  Leave Group
+                </button>
+              </div>
               {/* <p className="text-sm text-gray-500">
                 {groupInfo.chat_users?.length || 0} members
               </p> */}
@@ -179,40 +220,115 @@ const GroupHeader = () => {
           <div className="mt-5">
             <div className="flex flex-row justify-between">
               <p className="text-sm font-medium text-gray-700 mb-2">
-              Members
-            </p>
-            <button className="p-1 px-3 text-sm bg-[#6200B3] rounded-md cursor-pointer flex items-center gap-2 hover:bg-[#3E0071]"> <Plus size={18}/> Add new members</button>
+                Members
+              </p>
+              {!openNewMembersPanel && (
+                <button className="p-1 px-3 text-xs bg-transparent rounded-md cursor-pointer flex items-center gap-2 text-black " onClick={() => { setOpenNewMembersPanel(true) }}> <Plus size={18} /> Add new members</button>
+              )}
+
+              {openNewMembersPanel && (
+                <button className="p-1 px-3 text-xs bg-transparent rounded-md cursor-pointer flex items-center gap-1 text-black  " onClick={() => { setOpenNewMembersPanel(false) }}><ArrowLeft size={15} />Back</button>
+              )}
             </div>
 
+            {/* {openNewMembersPanel && (
+              <input
+                type="text"
+                placeholder="Add more members..."
+                className="w-full border-2 p-1.5 px-3 rounded-xl text-black border-[#9a9a9a] text-xs mt-2 mb-1 outline-none"
+              />
+            )} */}
 
 
-            <div className="flex flex-col overflow-y-auto h-50 w-full gap-2">
-              
-              {groupInfo?.chat_users.map((user) => (
-                <div
-                  key={user.user_id}
-                  className="border-b-2 border-[#ebebeb68] flex items-center gap-3 p-2 rounded-md hover:bg-[##F1E0FF]"
-                >
-                 
-                  <img
-                    src={user.user.profile}
-                    className="h-8 w-8 rounded-full object-cover"
-                    alt={user.user.name}
-                  />
-                  <div className="flex flex-row justify-between w-full ">
-                    <p className="text-sm font-medium text-black">
-                      {user.user.name}
-                    </p>
-                    {user.group_admin && (
-                      <span className="text-[10px] text-[#6200B3]">Admin</span>
-                    )}
+
+            {!openNewMembersPanel && (
+              <div className="flex flex-col overflow-y-auto sm:h-70 h-100  w-full gap-2">
+
+                {groupInfo?.chat_users.map((user) => (
+                  <div
+                    key={user.user_id}
+                    className="border-b-2 border-[#ebebeb68] flex items-center gap-3 p-2 rounded-md hover:bg-[##F1E0FF]"
+                  >
+
+                    <img
+                      src={user.user.profile}
+                      className="h-8 w-8 rounded-full object-cover"
+                      alt={user.user.name}
+                    />
+                    <div className="flex flex-row justify-between w-full ">
+                      <p className="text-sm font-medium text-black">
+                        {user.user.name}
+                      </p>
+                      {user.group_admin && (
+                        <span className="text-[10px] text-[#6200B3]">Admin</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+
+
+            {openNewMembersPanel && (
+              <div className="flex flex-col overflow-y-auto sm:h-60 h-90 w-full gap-2 mt-2">
+
+                {usersNotInGroup?.length === 0 && (
+                  <p className="text-xs text-gray-500 text-center">
+                    All users are already in this group
+                  </p>
+                )}
+
+                {usersNotInGroup?.map((user) => {
+                  const isSelected = selectedUserIds.includes(user.user_id);
+
+                  return (
+                    <button
+                      key={user.user_id}
+                      onClick={() => toggleUserSelection(user.user_id)}
+                      className={`flex items-center gap-3 p-2 rounded-md border-b-2 
+            ${isSelected
+                          ? "bg-[#EAD7FF] border-none"
+                          : "bg-white border-gray-100 hover:bg-[#F5ECFF]"
+                        }`}
+                    >
+                      <img
+                        src={user.profile}
+                        alt={user.name}
+                        className="h-8 w-8 rounded-full object-cover"
+                      />
+
+                      <p className="text-sm text-black flex-1 text-left">
+                        {user.name}
+                      </p>
+
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        readOnly
+                        className="accent-[#6200B3]"
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+        
+            {openNewMembersPanel &&  (
+              <button onClick={handleAddMember} className="w-full cursor-pointer text-center p-1 text-sm bg-[#6200B3] hover:bg-[#420078] text-white rounded-md mt-2">
+                {isAddingMembers? <span className="loading loading-spinner loading-xs"></span> : "Add Members"}
+              </button>
+            )}
+
+
+            
+
+
+
           </div>
         </div>
       </div>
+
     </>
   );
 };

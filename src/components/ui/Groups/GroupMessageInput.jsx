@@ -104,6 +104,7 @@ const GroupMessageInput = () => {
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
+        setSendingMessage(true);
         const messageData = {
             user_id: authUser.user_id,
             chat_id : selectedGroupId,
@@ -207,7 +208,10 @@ const GroupMessageInput = () => {
                     className="btn hover:border-[#b6b5ff] btn-circle rounded-xl shadow-none bg-white border-2 border-gray-300"
                     disabled={!text.trim() && !attachmentFile}
                 >
-                    <Send className='text-[#555555]' />
+                    {sendingMessage
+                        ? <span className="loading loading-spinner loading-xs text-[#6200B3]"></span>
+                        : <Send className="text-[#555555]" />
+                    }
                 </button>
             </form>
         </div>

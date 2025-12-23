@@ -2,7 +2,14 @@ import React, { useEffect,useRef,useState  } from 'react'
 import { useChatStore } from '../../../store/useChatStore';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { formatMessageTime } from '../../../lib/utils';
-
+import {
+  FileText,
+  FileImage,
+  FileArchive,
+  FileSpreadsheet,
+  File,
+  X,
+} from "lucide-react";
 
 const GroupArea = () => {
 
@@ -71,6 +78,35 @@ const GroupArea = () => {
   }
   return (
     <div className='p-5 inter-large'>
+      {previewImage && (
+        <dialog open className="modal ">
+          <div className="modal-box flex flex-col items-center sm:w-1/2 w-full bg-white">
+            <div className="flex  justify-end w-full mb-3">
+              
+              <button onClick={() => setPreviewImage(null)} >
+                <X size={20} className=" cursor-pointer text-black"/>
+              </button>
+              
+            </div>
+            <img
+              src={previewImage}
+              className="max-w-[80%] h-1/2 rounded-lg"
+              alt="preview"
+            />
+            <button className="border-2 border-[#6200B3] w-[80%] mt-2 cursor-pointer text-[#6200B3] p-1 px-4 rounded-md ">
+            Download
+          </button>
+
+          </div>
+
+          
+          <form method="dialog" className="modal-backdrop">
+            <button onClick={() => setPreviewImage(null)}>close</button>
+          </form>
+          
+          
+        </dialog>
+      )}
       {groupMessages?.map((message, index) => {
         const isMine = message.user_id === authUser.user_id;
         const isImage = message.file_type?.startsWith("image/");
@@ -101,8 +137,8 @@ const GroupArea = () => {
                       className="focus:outline-none"
                     >
                       <div className='flex flex-row justify-between gap-4'>
-                        <p className='text-[#3e3e3e] text-xs'>{message.user.name}</p>
-                        <time className="text-xs chat-footer opacity-50 justify-end">
+                        <p className={`opacity-50 text-xs ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `}`}>{message.user.name}</p>
+                        <time className={`text-[#3e3e3e] opacity-50 text-xs chat-footer  justify-end ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `} `}>
                           {formatMessageTime(message.created_at)}
                         </time>
                       </div>
@@ -120,8 +156,8 @@ const GroupArea = () => {
                     
                     <div className="flex flex-col gap-2">
                       <div className='flex flex-row justify-between gap-4'>
-                        <p className='text-[#3e3e3e] text-xs'>{message.user.name}</p>
-                        <time className="text-xs chat-footer opacity-50 justify-end">
+                        <p className={`opacity-50 text-xs ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `}`}>{message.user.name}</p>
+                        <time className={`text-[#3e3e3e] opacity-50 text-xs chat-footer  justify-end ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `} `}>
                           {formatMessageTime(message.created_at)}
                         </time>
                       </div>
@@ -160,8 +196,8 @@ const GroupArea = () => {
                   {message.message_text && (
                     <div>
                       <div className='flex flex-row justify-between gap-4'>
-                        <p className='text-[#3e3e3e] opacity-50 text-xs'>{message.user.name}</p>
-                        <time className="text-[#3e3e3e] opacity-50 text-xs chat-footer  justify-end">
+                        <p className={`opacity-50 text-xs ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `}`}>{message.user.name}</p>
+                        <time className={`text-[#3e3e3e] opacity-50 text-xs chat-footer  justify-end ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `} `}>
                           {formatMessageTime(message.created_at)}
                         </time>
                       </div>
