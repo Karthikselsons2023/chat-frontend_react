@@ -7,8 +7,8 @@ import { formatMessageTime } from '../../../lib/utils';
 const GroupArea = () => {
 
   const { authUser } = useAuthStore();
-  const { selectedGroupId, getGroupMessages,groupMessages,fetchingGroupMessages } = useChatStore();
-
+  const { selectedGroupId, getGroupMessages,groupMessages,fetchingGroupMessages,subscribeToGroupMessages,unSubscribeToGroupMessages  } = useChatStore();
+  
   const getFileNameFromUrl = (url) => {
   try {
     if (!url) return "file name";
@@ -22,9 +22,17 @@ const GroupArea = () => {
   const bottomRef = useRef(null);
     const [previewImage, setPreviewImage] = useState(null);
 
+
   useEffect(() => {
     if (!selectedGroupId || !authUser) return;
     getGroupMessages();
+    subscribeToGroupMessages();
+    console.log("group messages from group area: ",groupMessages);
+    
+    return () => {
+      unSubscribeToGroupMessages();
+    }
+      console.log("groupmessages: ", groupMessages);
   }, [selectedGroupId]);
 
   useEffect(() => {
@@ -62,7 +70,7 @@ const GroupArea = () => {
     );
   }
   return (
-    <div className='p-5'>
+    <div className='p-5 inter-large'>
       {groupMessages?.map((message, index) => {
         const isMine = message.user_id === authUser.user_id;
         const isImage = message.file_type?.startsWith("image/");
@@ -75,9 +83,9 @@ const GroupArea = () => {
             
 
             <div>
-              <p className='text-[#3e3e3e] text-xs mb-2'>{message.user.name}</p>
+              
               <div className='flex flex-row gap-3 '>
-
+              {!isMine? <img src={message.user?.profile} className='w-9 h-9 chat-footer rounded-full object-cover' /> : null}
                 <div
                   className={`chat-bubble rounded-xl ${isMine
                     ? "bg-[#6200B3] text-white shadow-2xl"
@@ -87,10 +95,17 @@ const GroupArea = () => {
 
                   {/* Image Message */}
                   {message.file_url && isImage && (
+                    
                     <button
                       onClick={() => setPreviewImage(message.file_url)}
                       className="focus:outline-none"
                     >
+                      <div className='flex flex-row justify-between gap-4'>
+                        <p className='text-[#3e3e3e] text-xs'>{message.user.name}</p>
+                        <time className="text-xs chat-footer opacity-50 justify-end">
+                          {formatMessageTime(message.created_at)}
+                        </time>
+                      </div>
                       <img
                         src={message.file_url}
                         className="w-32 h-32 object-cover rounded-lg mb-2 cursor-pointer"
@@ -100,14 +115,23 @@ const GroupArea = () => {
                   )}
 
                   {/* File Message */}
+                  
                   {message.file_url && !isImage && message.file_type && (
+                    
                     <div className="flex flex-col gap-2">
+                      <div className='flex flex-row justify-between gap-4'>
+                        <p className='text-[#3e3e3e] text-xs'>{message.user.name}</p>
+                        <time className="text-xs chat-footer opacity-50 justify-end">
+                          {formatMessageTime(message.created_at)}
+                        </time>
+                      </div>
 
                       <div className="flex items-center gap-3">
                         {getFileIcon(message.file_type)}
 
                         <span className="truncate max-w-[200px] text-sm">
                           {truncateFileName(getFileNameFromUrl(message.file_url))}
+                          
                         </span>
                       </div>
 
@@ -134,19 +158,25 @@ const GroupArea = () => {
 
                   {/* Text Message */}
                   {message.message_text && (
-                    <p className="mt-1">{message.message_text}</p>
+                    <div>
+                      <div className='flex flex-row justify-between gap-4'>
+                        <p className='text-[#3e3e3e] opacity-50 text-xs'>{message.user.name}</p>
+                        <time className="text-[#3e3e3e] opacity-50 text-xs chat-footer  justify-end">
+                          {formatMessageTime(message.created_at)}
+                        </time>
+                      </div>
+                      <p className="mt-1">{message.message_text}</p>
+
+                    </div>
+
                   )}
 
                 </div>
-                <img src={message.user?.profile} className='w-9 h-9 chat-footer rounded-full object-cover' />
+                {isMine? <img src={message.user?.profile} className='w-9 h-9 chat-footer rounded-full object-cover' /> : null}
 
               </div>
 
-              <div className=" mb-1 text-black">
-                <time className="text-xs chat-footer opacity-50 justify-end">
-                  {formatMessageTime(message.created_at)}
-                </time>
-              </div>
+             
             </div>
 
           </div>

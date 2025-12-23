@@ -240,7 +240,7 @@ const filteredUsers = useMemo(() => {
               <img
                 src={user.profile}
                 alt={user.name}
-                className="h-10 w-10 rounded-full"
+                className="h-10 w-10 rounded-full object-cover"
               />
 
               <div className="flex-1 text-left">

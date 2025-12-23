@@ -22,7 +22,7 @@ const RecentGroup = () => {
     }
 
 
-    console.log(sidebarRecentGroups)
+    // console.log(sidebarRecentGroups)
     if (isFetchingRecentGroups) {
         return <div className="p-4 text-sm text-gray-500">Loading groups…</div>;
     }

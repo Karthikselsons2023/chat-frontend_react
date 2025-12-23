@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { useChatStore } from "../../../store/useChatStore";
 import { useAuthStore } from "../../../store/useAuthStore";
+import { Plus } from 'lucide-react';
 
 const GroupHeader = () => {
   const { onlineUsers , authUser} = useAuthStore();
@@ -40,7 +41,7 @@ const GroupHeader = () => {
 
 
 
-  console.log(groupInfo)
+  // console.log(groupInfo)
 
   return (
     <>
@@ -176,13 +177,17 @@ const GroupHeader = () => {
 
           {/* Members */}
           <div className="mt-5">
-            <p className="text-sm font-medium text-gray-700 mb-2">
+            <div className="flex flex-row justify-between">
+              <p className="text-sm font-medium text-gray-700 mb-2">
               Members
             </p>
+            <button className="p-1 px-3 text-sm bg-[#6200B3] rounded-md cursor-pointer flex items-center gap-2 hover:bg-[#3E0071]"> <Plus size={18}/> Add new members</button>
+            </div>
 
 
 
             <div className="flex flex-col overflow-y-auto h-50 w-full gap-2">
+              
               {groupInfo?.chat_users.map((user) => (
                 <div
                   key={user.user_id}

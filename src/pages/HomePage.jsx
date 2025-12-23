@@ -18,7 +18,7 @@ export default function HomePage() {
   const { authUser, isLogginIn, checkAuth, currentPage } = useAuthStore();
   const { selectedUser, setSelectedUser, selectedGroupId } = useChatStore();
 
-  console.log("Auth User in HomePage:", authUser);
+  // console.log("Auth User in HomePage:", authUser);
   return (
     <div className="h-screen flex bg-white">
       {/* Sidebar */}

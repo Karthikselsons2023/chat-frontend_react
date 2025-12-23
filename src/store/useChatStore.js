@@ -45,6 +45,8 @@ export const useChatStore = create((set, get) => ({
     set({isAllUsersRecentSelected: type});
   },
 
+
+ 
   emitTyping: () => {
     const socket = useAuthStore.getState().socket;
     const authUser = useAuthStore.getState().authUser;
@@ -52,10 +54,7 @@ export const useChatStore = create((set, get) => ({
 
     if (!selectedUser) return;
 
-    socket.emit("typing", {
-      senderId: authUser.user_id,
-      receiverId: selectedUser.user_id,
-    });
+    
   },
 
   emitStopTyping: () => {
@@ -119,15 +118,31 @@ export const useChatStore = create((set, get) => ({
     } catch (error) {
       console.log("error in creating group/ sending group data: ",error);
     }finally{
-      set({creatingGroup: false});
+      set({ creatingGroup: false });
     }
   },
 
-  setSelectedGroupId: async (selectedGroupId) => {
-    set({selectedUser: null})
-    console.log("selected group id: ",selectedGroupId)
-    set({selectedGroupId: selectedGroupId});
+  setSelectedGroupId: async (groupId) => {
+    const { emitJoinGroup } = get();
+
+    set({ selectedUser: null });
+    set({ selectedGroupId: groupId });
+
+    emitJoinGroup(groupId);
   },
+
+  emitJoinGroup: (groupId) => {
+    const authUser = useAuthStore.getState().authUser;
+    const socket = useAuthStore.getState().socket;
+    if (!groupId || !authUser) return;
+    
+
+    socket.emit("joinGroup", {
+      chat_id: groupId,
+      user_id: authUser.user_id,
+    });
+  },
+
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -183,6 +198,28 @@ export const useChatStore = create((set, get) => ({
 });
 
 },
+subscribeToGroupMessages: () => {
+  const { selectedGroupId } = get();
+  if (!selectedGroupId) return;
+
+  const socket = useAuthStore.getState().socket;
+
+  socket.on("newGroupMessage", (msg) => {
+    if (String(msg.chat_id) !== String(selectedGroupId)) return;
+
+    set({
+      groupMessages: [...get().groupMessages, msg],
+    });
+  });
+},
+
+
+unSubscribeToGroupMessages : async () => {
+  const socket = useAuthStore.getState().socket;
+  socket.off("newGroupMessage");
+},
+
+
 
   unsubscribeToMessages:()=>{
     const socket = useAuthStore.getState().socket;
@@ -270,7 +307,7 @@ getGroupMessages: async () => {
     const selectedGroupId = get().selectedGroupId;
     const res = await axiosInstance(`/chat/getGroupMessages?chatId=${selectedGroupId}`);
     const result = res.data;
-    set({groupMessages:result.message_text});
+    set({groupMessages:result.formattedMessages});
     console.log("fetched group chats: ",result);
   } catch (error) {
     console.log("Error in fetching group messages: ",error);
@@ -318,6 +355,8 @@ sendGroupMessage : async (payload) => {
       message_text: payload.message_text?.trim() || "",
       file_url: uploadedFileUrl,
       file_type: payload.file?.type || "",
+      name: authUser.name,
+      profile: authUser.profile,
     });
 
     console.log("sent message.");
