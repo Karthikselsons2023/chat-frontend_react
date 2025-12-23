@@ -6,6 +6,7 @@ import { useAuthStore } from "./useAuthStore.js";
 
 export const useChatStore = create((set, get) => ({
   messages: [],
+  groupMessages:[],
   users: [],
   selectedUser: null,
   isUsersLoading: false,
@@ -23,6 +24,7 @@ export const useChatStore = create((set, get) => ({
   isUploadingFile: false,
   isAllUsersRecentSelected: "all",
   isGroupAdmin : false,
+  fetchingGroupMessages: false,
 
 
   setIsGroupAdmin : async (adminornot) => {
@@ -248,6 +250,71 @@ sendMessage: async (payload) => {
     const res = await axiosInstance.post("/chat/send", {
       sender_id: authUser.user_id,
       receiver_id: selectedUser.user_id,
+      message_text: payload.message_text?.trim() || "",
+      file_url: uploadedFileUrl,
+      file_type: payload.file?.type || "",
+    });
+
+    console.log("sent message.");
+
+  } catch (error) {
+    console.error("sendMessage error:", error);
+  }
+},
+
+
+getGroupMessages: async () => {
+  set({fetchingGroupMessages : true});
+  try {
+    console.log("fetched chat id: ");
+    const selectedGroupId = get().selectedGroupId;
+    const res = await axiosInstance(`/chat/getGroupMessages?chatId=${selectedGroupId}`);
+    const result = res.data;
+    set({groupMessages:result.message_text});
+    console.log("fetched group chats: ",result);
+  } catch (error) {
+    console.log("Error in fetching group messages: ",error);
+  } finally{
+    set({fetchingGroupMessages : false});
+  }
+},
+
+
+sendGroupMessage : async (payload) => {
+  console.log("send message payload:", payload);
+  let uploadedFileUrl = ""; // ✅ single source of truth
+
+  const authUser = useAuthStore.getState().authUser;
+  const { selectedGroupId } = get();
+
+  try {
+    if (payload.file) {
+      const presignRes = await axiosInstance.post("/chat/presigned-url", {
+        fileName: payload.file.name,
+        fileType: payload.file.type,
+        folder: "uploads",
+      });
+
+      const { uploadUrl, fileUrl } = presignRes.data;
+
+      await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": payload.file.type,
+        },
+        body: payload.file,
+      });
+
+      uploadedFileUrl = fileUrl; 
+      console.log("File uploaded:", uploadedFileUrl);
+    }
+    
+
+    
+    console.log("user_id: ",authUser.user_id," chat_id: ",selectedGroupId," message_text: ",payload.message_text?.trim() || "", "file_name : " ,uploadedFileUrl, "file_type: ",payload.file?.type || "");
+    const res = await axiosInstance.post("/chat/sendGroupMessage", {
+      user_id: authUser.user_id,
+      chat_id: selectedGroupId,
       message_text: payload.message_text?.trim() || "",
       file_url: uploadedFileUrl,
       file_type: payload.file?.type || "",

@@ -25,41 +25,41 @@ const getFileIcon = (mimeType) => {
 };
 
 const GroupMessageInput = () => {
-      const [text, setText] = useState("");
-      const [attachmentPreview, setAttachmentPreview] = useState(null);
-      const [attachmentFile, setAttachmentFile] = useState(null);
-      const fileInputRef = useRef(null);
-      const { authUser } = useAuthStore();
-      const { 
-        sendMessage, 
-        selectedUser, 
-      } = useChatStore();
+    const [text, setText] = useState("");
+    const [attachmentPreview, setAttachmentPreview] = useState(null);
+    const [attachmentFile, setAttachmentFile] = useState(null);
+    const fileInputRef = useRef(null);
+    const { authUser } = useAuthStore();
+    const [fileName, setFileName] = useState();
+    const [fileType, setFileType] = useState();
+    const [sendingMessage, setSendingMessage] = useState(false);
+    const { sendGroupMessage, selectedGroupId, upload } = useChatStore();
 
-      const typingTimeoutRef = useRef(null);
+    const typingTimeoutRef = useRef(null);
 
 
-          // Memoize the icon and name for easy access in the JSX
-          const previewDetails = useMemo(() => {
-              if (!attachmentFile) return null;
-              const Icon = getFileIcon(attachmentFile.type);
-              return {
-                  Icon,
-                  name: attachmentFile.name,
-                  mimeType: attachmentFile.type,
-                  size: attachmentFile.size,
-              };
-          }, [attachmentFile]);
-  
-          const handleFileChange = (e) => {
+    // Memoize the icon and name for easy access in the JSX
+    const previewDetails = useMemo(() => {
+        if (!attachmentFile) return null;
+        const Icon = getFileIcon(attachmentFile.type);
+        return {
+            Icon,
+            name: attachmentFile.name,
+            mimeType: attachmentFile.type,
+            size: attachmentFile.size,
+        };
+    }, [attachmentFile]);
+
+    const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         setAttachmentFile(null);
         setAttachmentPreview(null);
 
-        const MAX_SIZE = 20 * 1024 * 1024; // 10MB
+        const MAX_SIZE = 2000 * 1024 * 1024; // approx. 2GB
         if (file.size > MAX_SIZE) {
-            toast.error("File size must be less than 20MB");
+            toast.error("File size must be less than 2GB");
             e.target.value = null; // Reset the input field
             return;
         }
@@ -87,83 +87,92 @@ const GroupMessageInput = () => {
         }
     };
 
-        const handleTyping = (e) => {
-  setText(e.target.value);
+    // const handleTyping = (e) => {
+    //     setText(e.target.value);
 
-  emitTyping();
+    //     emitTyping();
 
-  if (typingTimeoutRef.current) {
-    clearTimeout(typingTimeoutRef.current);
-  }
+    //     if (typingTimeoutRef.current) {
+    //         clearTimeout(typingTimeoutRef.current);
+    //     }
 
-  typingTimeoutRef.current = setTimeout(() => {
-    emitStopTyping();
-  }, 1000); // stops after 800ms of no typing
-};
+    //     typingTimeoutRef.current = setTimeout(() => {
+    //         emitStopTyping();
+    //     }, 1000); // stops after 800ms of no typing
+    // };
 
 
     const handleSendMessage = async (e) => {
-  e.preventDefault();
-      console.log("message send clicked")
-//   if (!text.trim()) {
-//     toast.error("Please type a message");
-//     return;
-//   }
+        e.preventDefault();
+        const messageData = {
+            user_id: authUser.user_id,
+            chat_id : selectedGroupId,
+            message_text: text.trim(),
+            file: "",
+            fileName: "",
+            fileType: "",
+            user : {
+                profile : authUser.profile,
+                name : authUser.name,
+            }
+        };
 
-//     console.log("Sending message payload:", {
-//   sender_id: authUser.user_id,
-//   receiver_id: selectedUser.user_id,
-//   message_text: text.trim(),
-// }); 
-//   await sendMessage({
-//     sender_id: authUser.user_id,
-//     receiver_id: selectedUser.user_id,
-//     message_text: text.trim(),
-//   });
+        if (attachmentFile) {
+            messageData.file = attachmentFile;
+            messageData.fileName = attachmentFile.name;
+            messageData.fileType = attachmentFile.type;
+        }
 
-//   setText("");
-};
+        await sendGroupMessage(messageData);
 
-  return (
-    <div className="p-4 w-full nochatbg text-main border-t-1 border-gray-300">
-    
-                {attachmentFile && previewDetails && (
-                    <div className="mb-3 flex items-center gap-2">
-                        <div className="relative p-2 rounded-lg border border-gray-300 flex items-center bg-white">
-    
-    
-                            {previewDetails.mimeType.startsWith('image/') && attachmentPreview ? (
-                                <img
-                                    src={attachmentPreview}
-                                    alt="Image Preview"
-                                    className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-                                />
-                            ) : (
-                                <previewDetails.Icon className='w-8 h-8 text-[#998eff]' />
-                            )}
-    
-    
-                            <span className="ml-3 text-sm text-black max-w-xs truncate" title={previewDetails.name}>
-                                {previewDetails.name}
-                            </span>
-    
-    
-                            <button
-                                onClick={removeAttachment}
-                                className="p-1 cursor-pointer absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
-                                type="button"
-                            >
-                                <X className='w-4 h-4' />
-                            </button>
-                        </div>
+        removeAttachment();
+        setSendingMessage(false);
+        setText("");
+        console.log("message send handler clicked")
+
+    };
+
+    return (
+        <div className="p-4 w-full nochatbg text-main border-t-1 border-gray-300">
+
+            {attachmentFile && previewDetails && (
+                <div className="mb-3 flex items-center gap-2">
+                    <div className="relative p-2 rounded-lg border border-gray-300 flex items-center bg-white">
+
+
+                        {previewDetails.mimeType.startsWith('image/') && attachmentPreview ? (
+                            <img
+                                src={attachmentPreview}
+                                alt="Image Preview"
+                                className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                            />
+                        ) : (
+                            <previewDetails.Icon className='w-8 h-8 text-[#998eff]' />
+                        )}
+
+
+                        <span className="ml-3 text-sm text-black max-w-xs truncate" title={previewDetails.name}>
+                            {previewDetails.name}
+                        </span>
+
+
+                        <button
+                            onClick={removeAttachment}
+                            className="p-1 cursor-pointer absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
+                            type="button"
+                        >
+                            <X className='w-4 h-4' />
+                        </button>
                     </div>
-                )}
-    
-                <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                    <div className="flex-1 flex gap-2">
-                        <input
-                            type="text"
-                            className="
+                </div>
+            )}
+
+            <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+                <div className="flex-1 flex gap-2">
+                    <input
+                        type="text"
+                        onChange={(e) => setText(e.target.value)}
+                        className="
         w-full input input-bordered rounded-xl border-2
         bg-white text-black border-gray-300
         outline-none
@@ -172,37 +181,37 @@ const GroupMessageInput = () => {
         focus:shadow-none inter-large text-sm
         focus:border-[#998eff]
       "
-                            value={text}
-                            placeholder="Type a message..."
-    
-                        />
-    
-                        <input
-                            type="file"
-                            className="hidden"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                        />
-    
-                        <button
-                            type="button"
-                            className={`sm:flex hover:border-[#b6b5ff] btn btn-circle rounded-xl shadow-none bg-white border-2 border-gray-300 ${attachmentFile ? "text-success border-[#998eff]" : "text-muted"}`}
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            <Paperclip className='text-[#555555]' />
-                        </button>
-                    </div>
-    
+                        value={text}
+                        placeholder="Type a message..."
+
+                    />
+
+                    <input
+                        type="file"
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                    />
+
                     <button
-                        type="submit"
-                        className="btn hover:border-[#b6b5ff] btn-circle rounded-xl shadow-none bg-white border-2 border-gray-300"
-                        disabled={!text.trim()}
+                        type="button"
+                        className={`sm:flex hover:border-[#b6b5ff] btn btn-circle rounded-xl shadow-none bg-white border-2 border-gray-300 ${attachmentFile ? "text-success border-[#998eff]" : "text-muted"}`}
+                        onClick={() => fileInputRef.current?.click()}
                     >
-                        <Send className='text-[#555555]' />
+                        <Paperclip className='text-[#555555]' />
                     </button>
-                </form>
-            </div>
-  )
+                </div>
+
+                <button
+                    type="submit"
+                    className="btn hover:border-[#b6b5ff] btn-circle rounded-xl shadow-none bg-white border-2 border-gray-300"
+                    disabled={!text.trim() && !attachmentFile}
+                >
+                    <Send className='text-[#555555]' />
+                </button>
+            </form>
+        </div>
+    )
 }
 
 export default GroupMessageInput

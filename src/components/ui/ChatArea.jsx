@@ -115,7 +115,7 @@ const ChatArea = () => {
         </dialog>
       )}
 
-      {messages.map((message, index) => {
+      {messages?.map((message, index) => {
         const isMine = message.user_id === authUser.user_id;
         const isImage = message.file_type?.startsWith("image/");
 

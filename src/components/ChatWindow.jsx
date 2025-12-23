@@ -4,7 +4,7 @@ import ChatArea from "./ui/ChatArea";
 
 export default function ChatWindow({ chat, onBack }) {
   return (
-    <div className="transition-all flex flex-col h-screen bg-gray-100">
+    <div className="transition-all flex flex-col h-screen bg-[#ECECEC]">
       
 
       <div className="shrink-0 bg-white">

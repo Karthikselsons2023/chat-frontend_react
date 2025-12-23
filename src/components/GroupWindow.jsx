@@ -16,7 +16,7 @@ const GroupWindow = () => {
   }, [selectedGroupId]);
 
   return (
-    <div className="flex flex-col h-full w-full bg-gray-100">
+    <div className="flex flex-col h-full w-full bg-[#ECECEC]">
       <div className="shrink-0 bg-white">
         <GroupHeader />
       </div>
