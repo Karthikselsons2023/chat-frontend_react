@@ -33,6 +33,38 @@ export const useChatStore = create((set, get) => ({
   },
 
 
+  makeAdmin: async (payload) => {
+    try {
+      console.log(payload)
+      const res = await axiosInstance.post("/chat/groupmakeadmin", payload);
+      const result = res.data;
+      
+    } catch (error) {
+      console.log("Error in making admin: ",error);
+    }
+  },
+
+  removeAdmin: async (payload) => {
+    try {
+      console.log(payload);
+      const res = await axiosInstance.post("/chat/removeadmin", payload);
+      const result = res.data;
+    } catch (error) {
+      console.log("Error in removing admin: ", error);
+    }
+  },
+
+    removeMember: async (payload) => {
+    try {
+      console.log(payload);
+      const res = await axiosInstance.post("/chat/removegroupmember", payload);
+      const result = res.data;
+      
+    } catch (error) {
+      console.log("Error in making admin: ",error);
+    }
+  },
+
   addMembers : async (payload) => {
     try {
       const res = await axiosInstance.post("/chat/groupaddpeople",payload);
@@ -44,16 +76,13 @@ export const useChatStore = create((set, get) => ({
   },
 
 
-  setIsGroupAdmin : async (adminornot) => {
-    if(adminornot === "true"){
-      console.log("You are group admin");
-    set({isGroupAdmin:true});
-    }
-    else {
-      console.log("You are NOT group admin");
-    }
-    
-  },
+setIsGroupAdmin: (adminOrNot) => {
+  console.log(
+    adminOrNot ? "You are group admin" : "You are NOT group admin"
+  );
+
+  set({ isGroupAdmin: Boolean(adminOrNot) });
+},
 
 
 

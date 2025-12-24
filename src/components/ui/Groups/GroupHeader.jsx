@@ -4,6 +4,7 @@ import { useChatStore } from "../../../store/useChatStore";
 import { useAuthStore } from "../../../store/useAuthStore";
 import { Plus } from 'lucide-react';
 import { ArrowLeft } from 'lucide-react';
+import { EllipsisVertical } from 'lucide-react';
 
 const GroupHeader = () => {
   const { onlineUsers, authUser, allUsers } = useAuthStore();
@@ -11,6 +12,9 @@ const GroupHeader = () => {
   const [openNewMembersPanel, setOpenNewMembersPanel] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState([]);
   const [isAddingMembers, setIsAddingMembers] = useState(false);
+  const [makingAdmin, setMakingAdmin] = useState(false);
+  const [removingMember, setRemovingMember]= useState(false);
+  const [removingAdmin, setRemovingAdmin] = useState(false);
 
   const {
     groupInfo,
@@ -21,23 +25,29 @@ const GroupHeader = () => {
     isGroupAdmin,
     setIsGroupAdmin,
     addMembers,
+    makeAdmin,
+    removeMember,
+    removeAdmin,    
     } = useChatStore();
 
   useEffect(() => {
     setGroupInfo();
-  }, [selectedGroupId,isAddingMembers]);
+  }, [selectedGroupId,isAddingMembers,makingAdmin,removingMember,removingAdmin,isAddingMembers]);
 
-  useEffect(() => {
-    if (!groupInfo || !authUser) return;
+useEffect(() => {
+  if (!groupInfo || !authUser) {
+    setIsGroupAdmin(false);
+    return;
+  }
 
-    const isAdmin = groupInfo.chat_users.some(
-      (u) => u.user_id === authUser.user_id && u.group_admin === true
-    );
-    if (isAdmin) {
-      setIsGroupAdmin("true");
-    }
+  const isAdmin = groupInfo.chat_users.some(
+    (u) =>
+      u.user_id === authUser.user_id &&
+      u.group_admin === true
+  );
 
-  }, [groupInfo, authUser]);
+  setIsGroupAdmin(isAdmin); // ✅ always set
+}, [groupInfo, authUser]);
 
 
 
@@ -79,6 +89,47 @@ const GroupHeader = () => {
     setIsAddingMembers(false);
     setOpenNewMembersPanel(false);
   }
+
+  const handleMakeAdmin = async (user_id) => {
+
+    // user_id.preventDefault();
+    setMakingAdmin(true);
+    const payload = {
+      auth_id : authUser.user_id,
+      user_id : user_id,
+      chat_id : selectedGroupId,
+    };
+    await makeAdmin(payload);
+    // console.log("payload: ",payload);
+    setMakingAdmin(false);
+  }
+
+  const handleRemoveMember = async (user_id) => {
+    setRemovingMember(true);
+    const payload = {
+      auth_id : authUser.user_id,
+      user_id : user_id,
+      chat_id : selectedGroupId,
+    };
+    await removeMember(payload);
+    // console.log("payload: ",payload);
+    setRemovingMember(false);
+  }
+
+
+
+  const handleRemoveAdmin = async (user_id) => {
+    setRemovingAdmin(true);
+  const payload = {
+    auth_id: authUser.user_id,
+    user_id,
+    chat_id: selectedGroupId,
+  };
+  await removeAdmin(payload);
+  setRemovingAdmin(false);
+  
+};
+
 
   // console.log(groupInfo)
 
@@ -140,7 +191,7 @@ const GroupHeader = () => {
 
         <div
           className={`
-            relative z-10 w-140 h-[90vh] mx-4 rounded-xl bg-white p-6 shadow-xl
+            relative z-10 w-160 h-[90vh] mx-4 rounded-xl bg-white p-5 shadow-xl
             transform transition-all duration-300 ease-out
             ${open ? "scale-100 opacity-100" : "scale-95 opacity-0"}
           `}
@@ -222,9 +273,9 @@ const GroupHeader = () => {
               <p className="text-sm font-medium text-gray-700 mb-2">
                 Members
               </p>
-              {!openNewMembersPanel && (
+              {!openNewMembersPanel && isGroupAdmin? (
                 <button className="p-1 px-3 text-xs bg-transparent rounded-md cursor-pointer flex items-center gap-2 text-black " onClick={() => { setOpenNewMembersPanel(true) }}> <Plus size={18} /> Add new members</button>
-              )}
+              ) : null}
 
               {openNewMembersPanel && (
                 <button className="p-1 px-3 text-xs bg-transparent rounded-md cursor-pointer flex items-center gap-1 text-black  " onClick={() => { setOpenNewMembersPanel(false) }}><ArrowLeft size={15} />Back</button>
@@ -262,6 +313,44 @@ const GroupHeader = () => {
                       {user.group_admin && (
                         <span className="text-[10px] text-[#6200B3]">Admin</span>
                       )}
+                    </div>
+                    <div className="dropdown">
+                      <div tabIndex={0} role="button" className={`btn bg-transparent text-black border-none shadow-none ${user.user_id !== authUser.user_id ? null : "hidden"}`}><EllipsisVertical size={20} /></div>
+                      {user.user_id !== authUser.user_id && (
+                        <ul tabIndex="-1" className="dropdown-content text-black   menu bg-white rounded-box z-1 w-52 p-2 shadow-sm -translate-x-40 -translate-y-13">
+                        {isGroupAdmin && user.user_id !== authUser.user_id && (
+                          <li>
+                            <button
+                              onClick={() =>
+                                user.group_admin
+                                  ? handleRemoveAdmin(user.user_id)
+                                  : handleMakeAdmin(user.user_id)
+                              }
+                            >
+                              {user.group_admin
+                                ? "Remove Admin"
+                                : makingAdmin
+                                  ? "Loading..."
+                                  : "Make Admin"}
+                            </button>
+                          </li>
+                        )}
+
+
+                        {isGroupAdmin && user.user_id !== authUser.user_id && (
+                          <li>
+                            <button onClick={() => handleRemoveMember(user.user_id)}>
+                              {removingMember ? "Removing..." : "Remove"}
+                            </button>
+                          </li>
+                        )}
+                        
+                        {user.user_id !== authUser.user_id && (
+                         <li><button onClick={() => { setSelectedUser(user) }}>Message</button></li> )}
+
+                      </ul>
+                      )}
+                      
                     </div>
                   </div>
                 ))}

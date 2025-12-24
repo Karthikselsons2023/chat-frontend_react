@@ -55,7 +55,7 @@ const GroupArea = () => {
     if (!type) return <File size={24} />;
 
     if (type.startsWith("image/")) return <FileImage size={24} />;
-    if (type.includes("pdf")) return <img className="w-8 h-full " src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/PDF_file_icon.svg/1667px-PDF_file_icon.svg.png" />;  
+    if (type.includes("pdf")) return <img className="w-7 h-full " src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/PDF_file_icon.svg/1667px-PDF_file_icon.svg.png" />;  
     if (type.includes("word") || type.includes("msword"))
       return <img className="w-8 h-full " src="https://cdn-icons-png.flaticon.com/512/9496/9496487.png" />;
     
@@ -128,7 +128,12 @@ const GroupArea = () => {
                     : "bg-white text-[#6200B3] shadow-4xl"
                     }`}
                 >
-
+                  <div className='flex flex-row justify-between gap-4'>
+                        <p className={`opacity-50 text-xs ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `}`}>{message.user.name}</p>
+                        <time className={`text-[#3e3e3e] opacity-50 text-xs chat-footer  justify-end ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `} `}>
+                          {formatMessageTime(message.created_at)}
+                        </time>
+                      </div>
                   {/* Image Message */}
                   {message.file_url && isImage && (
                     
@@ -136,12 +141,7 @@ const GroupArea = () => {
                       onClick={() => setPreviewImage(message.file_url)}
                       className="focus:outline-none"
                     >
-                      <div className='flex flex-row justify-between gap-4'>
-                        <p className={`opacity-50 text-xs ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `}`}>{message.user.name}</p>
-                        <time className={`text-[#3e3e3e] opacity-50 text-xs chat-footer  justify-end ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `} `}>
-                          {formatMessageTime(message.created_at)}
-                        </time>
-                      </div>
+                      
                       <img
                         src={message.file_url}
                         className="w-32 h-32 object-cover rounded-lg mb-2 cursor-pointer"
@@ -155,13 +155,7 @@ const GroupArea = () => {
                   {message.file_url && !isImage && message.file_type && (
                     
                     <div className="flex flex-col gap-2">
-                      <div className='flex flex-row justify-between gap-4'>
-                        <p className={`opacity-50 text-xs ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `}`}>{message.user.name}</p>
-                        <time className={`text-[#3e3e3e] opacity-50 text-xs chat-footer  justify-end ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `} `}>
-                          {formatMessageTime(message.created_at)}
-                        </time>
-                      </div>
-
+                      
                       <div className="flex items-center gap-3">
                         {getFileIcon(message.file_type)}
 
@@ -195,12 +189,7 @@ const GroupArea = () => {
                   {/* Text Message */}
                   {message.message_text && (
                     <div>
-                      <div className='flex flex-row justify-between gap-4'>
-                        <p className={`opacity-50 text-xs ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `}`}>{message.user.name}</p>
-                        <time className={`text-[#3e3e3e] opacity-50 text-xs chat-footer  justify-end ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `} `}>
-                          {formatMessageTime(message.created_at)}
-                        </time>
-                      </div>
+                     
                       <p className="mt-1">{message.message_text}</p>
 
                     </div>
