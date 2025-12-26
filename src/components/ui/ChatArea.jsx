@@ -9,7 +9,9 @@ import {
   FileSpreadsheet,
   File,
   X,
-  Forward
+  Forward,
+  Ellipsis,
+  EllipsisVertical
 } from "lucide-react";
 
 
@@ -92,6 +94,7 @@ const ChatArea = () => {
   const { authUser } = useAuthStore();
   const bottomRef = useRef(null);
   const [previewImage, setPreviewImage] = useState(null);
+  const [hoveredMessageId, setHoveredMessageId] = useState(null);
 
   // Fetch messages
   useEffect(() => {
@@ -134,10 +137,10 @@ const ChatArea = () => {
     if (!type) return <File size={24} />;
 
     if (type.startsWith("image/")) return <FileImage size={24} />;
-    if (type.includes("pdf")) return <img className="w-8 h-full " src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/PDF_file_icon.svg/1667px-PDF_file_icon.svg.png" />;  
+    if (type.includes("pdf")) return <img className="w-8 h-full " src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/PDF_file_icon.svg/1667px-PDF_file_icon.svg.png" />;
     if (type.includes("word") || type.includes("msword"))
       return <img className="w-8 h-full " src="https://cdn-icons-png.flaticon.com/512/9496/9496487.png" />;
-    
+
     if (type.includes("excel") || type.includes("spreadsheet"))
       return <img className="w-8 h-full " src="https://www.freeiconspng.com/thumbs/excel-icon/excel-icon-12.png" />;
     if (type.includes("zip") || type.includes("compressed"))
@@ -146,7 +149,7 @@ const ChatArea = () => {
       return <img className="w-8 h-full " src="https://static.vecteezy.com/system/resources/thumbnails/010/161/430/small/3d-rendering-blue-clapperboard-with-play-icon-isolated-png.png" />
     return <File size={24} />;
   };
-  
+
 
 
   return (
@@ -156,11 +159,11 @@ const ChatArea = () => {
         <dialog open className="modal ">
           <div className="modal-box flex flex-col items-center sm:w-1/2 w-full bg-white">
             <div className="flex  justify-end w-full mb-3">
-              
+
               <button onClick={() => setPreviewImage(null)} >
-                <X size={20} className=" cursor-pointer text-black"/>
+                <X size={20} className=" cursor-pointer text-black" />
               </button>
-              
+
             </div>
             <img
               src={previewImage}
@@ -168,17 +171,17 @@ const ChatArea = () => {
               alt="preview"
             />
             <button className="border-2 border-[#6200B3] w-[80%] mt-2 cursor-pointer text-[#6200B3] p-1 px-4 rounded-md ">
-            Download
-          </button>
+              Download
+            </button>
 
           </div>
 
-          
+
           <form method="dialog" className="modal-backdrop">
             <button onClick={() => setPreviewImage(null)}>close</button>
           </form>
-          
-          
+
+
         </dialog>
       )}
 
@@ -186,24 +189,45 @@ const ChatArea = () => {
         const isMine = message.user_id === authUser.user_id;
         const isImage = message.file_type?.startsWith("image/");
         const isAudio = message.file_type?.startsWith("audio/");
+        const messageKey = message.id || `${message.created_at}-${index}`;
 
         return (
           <div
-            key={`${message.user_id}-${message.created_at}-${index}`}
-            className={`chat ${isMine ? "chat-end" : "chat-start"}`}
+            key={messageKey}
+            onMouseEnter={() => setHoveredMessageId(messageKey)}
+            onMouseLeave={() => setHoveredMessageId(null)}
+            className={`chat ${isMine ? "chat-end" : "chat-start"} `}
           >
-            <div className="chat-header mb-1 text-black">
-              <time className="text-xs opacity-50">
+            <div className="chat-header text-black flex items-center mb-1 space-between">
+
+              <time className="text-xs opacity-50 p-1">
                 {formatMessageTime(message.created_at)}
               </time>
+
+
+              {hoveredMessageId === messageKey && (
+                <div className={`dropdown ${isMine ? 'dropdown-end' : 'dropdown-start'}`}>
+                  <div role="button" tabIndex={0} className="hover:bg-[#d7d7d7] rounded-full p-1 cursor-pointer">
+                    <EllipsisVertical className="text-[#424242]" size={13} />
+                  </div>
+                  <ul tabIndex={0} className="text-xs border-1 border-[#d6beeb] p-1 dropdown-content menu bg-white rounded-box z-[1] w-40 shadow-sm">
+                    <li>
+                      <a className="text-[#6200B3] flex items-center active:!bg-[#6200B3] active:!text-white focus:bg-[#6200B3] focus:text-white">
+                        <Forward size={15} />
+                        Forward
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              )}
+
             </div>
 
             <div
-              className={`chat-bubble rounded-xl ${
-                isMine
+              className={`chat-bubble rounded-xl ${isMine
                   ? "bg-[#6200B3] text-white shadow-2xl"
                   : "bg-white text-[#6200B3] shadow-4xl"
-              }`}
+                }`}
             >
               {/* Image Message */}
               {message.file_url && isImage && (
@@ -221,12 +245,12 @@ const ChatArea = () => {
 
 
               {/* Audio Message */}
-             
+
               {message.file_url && isAudio && (
                 <AudioMessage url={message.file_url} isMine={isMine} />
               )}
 
-              {message.file_url && !isImage && !isAudio && message.file_type  && (
+              {message.file_url && !isImage && !isAudio && message.file_type && (
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-3">
                     {getFileIcon(message.file_type)}
