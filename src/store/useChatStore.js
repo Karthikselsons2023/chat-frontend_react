@@ -27,6 +27,21 @@ export const useChatStore = create((set, get) => ({
   fetchingGroupMessages: false,
   isAddingMembers : false,
   isSelecting : false,
+  selectedChatIds : [],
+  setSelectedChatIds: (updater) =>
+  set((state) => ({
+    selectedChatIds:
+      typeof updater === "function"
+        ? updater(state.selectedChatIds)
+        : updater,
+  })),
+
+  clearSelectedChatIds: () => {
+    set({ selectedChatIds: [] });
+  },
+
+
+
 
   setIsSelecting: async (value) => {
     set({isSelecting: value});

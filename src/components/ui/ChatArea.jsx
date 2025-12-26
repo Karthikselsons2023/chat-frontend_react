@@ -90,7 +90,9 @@ const ChatArea = () => {
     unsubscribeFromTyping,
     isTyping,
     isSelecting,
-    setIsSelecting
+    setIsSelecting,
+    selectedChatIds,
+    setSelectedChatIds
   } = useChatStore();
 
   const { authUser } = useAuthStore();
@@ -99,9 +101,8 @@ const ChatArea = () => {
 
 
   const [hoveredMessageId, setHoveredMessageId] = useState(null);
-  const [checkedMessageIds, setCheckedMessageIds] = useState([]);
   const handleCheckboxChange = (id) => {
-    setCheckedMessageIds((prev) =>
+    setSelectedChatIds((prev) =>
       prev.includes(id)
         ? prev.filter((item) => item !== id) // Remove if already there
         : [...prev, id]                      // Add if not there
@@ -206,9 +207,16 @@ const ChatArea = () => {
         return (
           <div
             key={messageKey}
+            role="button"
+            onClick={() => {
+              if(isSelecting === false) return;
+              handleCheckboxChange(message.id);
+            }}
+            
+            disable={isSelecting === false}
             onMouseEnter={() => setHoveredMessageId(messageKey)}
             onMouseLeave={() => setHoveredMessageId(null)}
-            className={`chat ${isMine ? "chat-end" : "chat-start"} `}
+            className={`chat ${isMine ? "chat-end" : "chat-start"} ${selectedChatIds.includes(message.id) ? "bg-[#eed8ff] rounded-lg " : ""} ${isSelecting === true ? "cursor-pointer rounded-xl hover:bg-[#e4e4e4]" : ""}`}
           >
             <div className="chat-header text-black flex items-center mb-1 gap-2">
               <time className="text-xs opacity-50 mt-2 mb-1">
@@ -241,7 +249,7 @@ const ChatArea = () => {
                checked:border-[#6200B3] 
                [--chkbg:#6200B3] [--chkfg:white] 
                cursor-pointer bg-white"
-                checked={checkedMessageIds.includes(message.id)}
+                checked={selectedChatIds.includes(message.id)}
                 onChange={() => handleCheckboxChange(message.id)}
               />
             </div>)}

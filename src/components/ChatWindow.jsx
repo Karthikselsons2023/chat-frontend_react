@@ -1,8 +1,11 @@
 import ChatHeader from "./ui/ChatHeader";
 import MessageInput from "./ui/MessageInput";
 import ChatArea from "./ui/ChatArea";
+import { useChatStore } from "../store/useChatStore";
+import ForwardingMessageBottomBar from "./ui/ForwardingMessageBottomBar";
 
 export default function ChatWindow({ chat, onBack }) {
+  const {isSelecting} = useChatStore();
   return (
     <div className="transition-all flex flex-col h-screen bg-[#ECECEC]">
       
@@ -18,7 +21,8 @@ export default function ChatWindow({ chat, onBack }) {
 
 
       <div className="shrink-0  bg-white">
-        <MessageInput />
+        {isSelecting === true ? <ForwardingMessageBottomBar /> :  <MessageInput />}
+        
       </div>
 
     </div>
