@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { useChatStore } from "../../../store/useChatStore";
 import { useAuthStore } from "../../../store/useAuthStore";
@@ -191,7 +191,7 @@ useEffect(() => {
 
         <div
           className={`
-            relative z-10 w-160 h-[90vh] mx-4 rounded-xl bg-white p-5 shadow-xl
+            relative z-10 w-140 h-[90vh] mx-4 rounded-xl bg-white p-5 shadow-xl
             transform transition-all duration-300 ease-out
             ${open ? "scale-100 opacity-100" : "scale-95 opacity-0"}
           `}
@@ -230,7 +230,7 @@ useEffect(() => {
               </p>
               <div>
                 <input
-                  className={`flex items-center gap-2 text-sm h-8 rounded-md w-80 sm:w-100 mt-1 border-2 border-gray-300 bg-white px-3 text-black focus-within:border-[#b766f9]
+                  className={`flex items-center gap-2 text-sm h-8 rounded-md w-full sm:w-100 mt-1 border-2 border-gray-300 bg-white px-3 text-black focus-within:border-[#b766f9]
     ${!isGroupAdmin ? "cursor-not-allowed opacity-60" : ""}
   `}
                   defaultValue={groupInfo.group_name}
@@ -303,7 +303,7 @@ useEffect(() => {
 
                     <img
                       src={user.user.profile}
-                      className="h-8 w-8 rounded-full object-cover"
+                      className="h-8 w-10 rounded-full object-cover"
                       alt={user.user.name}
                     />
                     <div className="flex flex-row justify-between w-full ">
@@ -346,7 +346,18 @@ useEffect(() => {
                         )}
                         
                         {user.user_id !== authUser.user_id && (
-                         <li><button onClick={() => { setSelectedUser(user) }}>Message</button></li> )}
+                         <li>
+                          <button onClick={() => { 
+                            const payload = {
+                              user_id : user.user_id,
+                              email : user.user.email,
+                              name: user.user.name,
+                              profile: user.user.profile,
+                              phone : user.user.phone
+                            }
+                            setSelectedUser(payload) }}>Message</button>
+                          {/* <button onClick={() => { console.log("user clicked message: ", user) }}>Message</button> */}
+                          </li> )}
 
                       </ul>
                       )}

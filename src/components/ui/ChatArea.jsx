@@ -9,7 +9,72 @@ import {
   FileSpreadsheet,
   File,
   X,
+  Forward
 } from "lucide-react";
+
+
+
+// 1. Add this small component ABOVE your ChatArea component
+const AudioMessage = ({ url, isMine }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState("0:00");
+  const [duration, setDuration] = useState("0:00");
+  const audioRef = useRef(null);
+
+  const formatTime = (time) => {
+    if (isNaN(time)) return "0:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
+  const togglePlay = () => {
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleTimeUpdate = () => {
+    const current = audioRef.current.currentTime;
+    const total = audioRef.current.duration;
+    setProgress((current / total) * 100);
+    setCurrentTime(formatTime(current));
+  };
+
+  const handleLoadedMetadata = () => {
+    setDuration(formatTime(audioRef.current.duration));
+  };
+
+  return (
+    <div className="audio-bubble flex flex-col gap-1">
+      <div className="flex items-center gap-3 w-full">
+        <audio
+          ref={audioRef}
+          src={url}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={() => setIsPlaying(false)}
+        />
+        <button className="play-btn flex items-center justify-center" onClick={togglePlay}>
+          {isPlaying ? "⏸" : "▶"}
+        </button>
+        <div className="progress">
+          <div className="progress-bar" style={{ width: `${progress}%` }} />
+        </div>
+      </div>
+      <div className={`flex justify-between text-[10px] px-1 ${isMine ? "text-white/80" : "text-[#6200B3]/80"}`}>
+        <span>{currentTime}</span>
+        <span>{duration}</span>
+      </div>
+    </div>
+  );
+};
+
+
 
 const ChatArea = () => {
   const {
@@ -81,6 +146,8 @@ const ChatArea = () => {
       return <img className="w-8 h-full " src="https://static.vecteezy.com/system/resources/thumbnails/010/161/430/small/3d-rendering-blue-clapperboard-with-play-icon-isolated-png.png" />
     return <File size={24} />;
   };
+  
+
 
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-3 inter-large newbg ">
@@ -118,6 +185,7 @@ const ChatArea = () => {
       {messages?.map((message, index) => {
         const isMine = message.user_id === authUser.user_id;
         const isImage = message.file_type?.startsWith("image/");
+        const isAudio = message.file_type?.startsWith("audio/");
 
         return (
           <div
@@ -151,8 +219,14 @@ const ChatArea = () => {
                 </button>
               )}
 
-              {/* File Message */}
-              {message.file_url && !isImage && message.file_type && (
+
+              {/* Audio Message */}
+             
+              {message.file_url && isAudio && (
+                <AudioMessage url={message.file_url} isMine={isMine} />
+              )}
+
+              {message.file_url && !isImage && !isAudio && message.file_type  && (
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-3">
                     {getFileIcon(message.file_type)}

@@ -1,4 +1,4 @@
-import React, { useEffect,useRef,useState  } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useChatStore } from '../../../store/useChatStore';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { formatMessageTime } from '../../../lib/utils';
@@ -11,54 +11,115 @@ import {
   X,
 } from "lucide-react";
 
+
+const AudioMessage = ({ url, isMine }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState("0:00");
+  const [duration, setDuration] = useState("0:00");
+  const audioRef = useRef(null);
+
+  const formatTime = (time) => {
+    if (isNaN(time)) return "0:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
+  const togglePlay = () => {
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleTimeUpdate = () => {
+    const current = audioRef.current.currentTime;
+    const total = audioRef.current.duration;
+    setProgress((current / total) * 100);
+    setCurrentTime(formatTime(current));
+  };
+
+  const handleLoadedMetadata = () => {
+    setDuration(formatTime(audioRef.current.duration));
+  };
+
+  return (
+    <div className="audio-bubble flex flex-col gap-1">
+      <div className="flex items-center gap-3 w-full">
+        <audio
+          ref={audioRef}
+          src={url}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={() => setIsPlaying(false)}
+        />
+        <button className="play-btn flex items-center justify-center" onClick={togglePlay}>
+          {isPlaying ? "⏸" : "▶"}
+        </button>
+        <div className="progress">
+          <div className="progress-bar" style={{ width: `${progress}%` }} />
+        </div>
+      </div>
+      <div className={`flex justify-between text-[10px] px-1 ${isMine ? "text-white/80" : "text-[#6200B3]/80"}`}>
+        <span>{currentTime}</span>
+        <span>{duration}</span>
+      </div>
+    </div>
+  );
+};
+
+
 const GroupArea = () => {
 
   const { authUser } = useAuthStore();
-  const { selectedGroupId, getGroupMessages,groupMessages,fetchingGroupMessages,subscribeToGroupMessages,unSubscribeToGroupMessages  } = useChatStore();
-  
+  const { selectedGroupId, getGroupMessages, groupMessages, fetchingGroupMessages, subscribeToGroupMessages, unSubscribeToGroupMessages } = useChatStore();
+
   const getFileNameFromUrl = (url) => {
-  try {
-    if (!url) return "file name";
-    const pathname = new URL(url).pathname;
-    return decodeURIComponent(pathname.split("/").pop());
-  } catch (err) {
-    console.error("Invalid file URL:", url);
-    return "Attachment";
-  }
-};
+    try {
+      if (!url) return "file name";
+      const pathname = new URL(url).pathname;
+      return decodeURIComponent(pathname.split("/").pop());
+    } catch (err) {
+      console.error("Invalid file URL:", url);
+      return "Attachment";
+    }
+  };
   const bottomRef = useRef(null);
-    const [previewImage, setPreviewImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
 
   useEffect(() => {
     if (!selectedGroupId || !authUser) return;
     getGroupMessages();
     subscribeToGroupMessages();
-    console.log("group messages from group area: ",groupMessages);
-    
+    console.log("group messages from group area: ", groupMessages);
+
     return () => {
       unSubscribeToGroupMessages();
     }
-      console.log("groupmessages: ", groupMessages);
+    console.log("groupmessages: ", groupMessages);
   }, [selectedGroupId]);
 
   useEffect(() => {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [groupMessages]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [groupMessages]);
 
   const truncateFileName = (name, maxChars = 25) => {
     if (!name) return "";
     return name.length <= maxChars ? name : name.slice(0, maxChars) + "...";
   };
 
-   const getFileIcon = (type) => {
+  const getFileIcon = (type) => {
     if (!type) return <File size={24} />;
 
     if (type.startsWith("image/")) return <FileImage size={24} />;
-    if (type.includes("pdf")) return <img className="w-7 h-full " src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/PDF_file_icon.svg/1667px-PDF_file_icon.svg.png" />;  
+    if (type.includes("pdf")) return <img className="w-7 h-full " src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/PDF_file_icon.svg/1667px-PDF_file_icon.svg.png" />;
     if (type.includes("word") || type.includes("msword"))
       return <img className="w-8 h-full " src="https://cdn-icons-png.flaticon.com/512/9496/9496487.png" />;
-    
+
     if (type.includes("excel") || type.includes("spreadsheet"))
       return <img className="w-8 h-full " src="https://www.freeiconspng.com/thumbs/excel-icon/excel-icon-12.png" />;
     if (type.includes("zip") || type.includes("compressed"))
@@ -82,11 +143,11 @@ const GroupArea = () => {
         <dialog open className="modal ">
           <div className="modal-box flex flex-col items-center sm:w-1/2 w-full bg-white">
             <div className="flex  justify-end w-full mb-3">
-              
+
               <button onClick={() => setPreviewImage(null)} >
-                <X size={20} className=" cursor-pointer text-black"/>
+                <X size={20} className=" cursor-pointer text-black" />
               </button>
-              
+
             </div>
             <img
               src={previewImage}
@@ -94,34 +155,35 @@ const GroupArea = () => {
               alt="preview"
             />
             <button className="border-2 border-[#6200B3] w-[80%] mt-2 cursor-pointer text-[#6200B3] p-1 px-4 rounded-md ">
-            Download
-          </button>
+              Download
+            </button>
 
           </div>
 
-          
+
           <form method="dialog" className="modal-backdrop">
             <button onClick={() => setPreviewImage(null)}>close</button>
           </form>
-          
-          
+
+
         </dialog>
       )}
       {groupMessages?.map((message, index) => {
         const isMine = message.user_id === authUser.user_id;
         const isImage = message.file_type?.startsWith("image/");
+        const isAudio = message.file_type?.startsWith("audio/");
 
         return (
           <div
             key={`${message.user_id}-${message.created_at}-${index}`}
-            className={`chat mt-2 ${isMine ? "chat-end" : "chat-start"}`}
+            className={`chat mt-4 ${isMine ? "chat-end" : "chat-start"}`}
           >
-            
+
 
             <div>
-              
+
               <div className='flex flex-row gap-3 '>
-              {!isMine? <img src={message.user?.profile} className='w-9 h-9 chat-footer rounded-full object-cover' /> : null}
+                {!isMine ? <img src={message.user?.profile} className='w-9 h-9 chat-footer rounded-full object-cover' /> : null}
                 <div
                   className={`chat-bubble rounded-xl ${isMine
                     ? "bg-[#6200B3] text-white shadow-2xl"
@@ -129,19 +191,19 @@ const GroupArea = () => {
                     }`}
                 >
                   <div className='flex flex-row justify-between gap-4'>
-                        <p className={`opacity-50 text-xs ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `}`}>{message.user.name}</p>
-                        <time className={`text-[#3e3e3e] opacity-50 text-xs chat-footer  justify-end ${isMine? `text-[#ffffff] ` : `text-[#3e3e3e] `} `}>
-                          {formatMessageTime(message.created_at)}
-                        </time>
-                      </div>
+                    <p className={`opacity-50 text-xs ${isMine ? `text-[#ffffff] ` : `text-[#3e3e3e] `}`}>{message.user.name}</p>
+                    <time className={`text-[#3e3e3e] opacity-50 text-xs chat-footer  justify-end ${isMine ? `text-[#ffffff] ` : `text-[#3e3e3e] `} `}>
+                      {formatMessageTime(message.created_at)}
+                    </time>
+                  </div>
                   {/* Image Message */}
                   {message.file_url && isImage && (
-                    
+
                     <button
                       onClick={() => setPreviewImage(message.file_url)}
-                      className="focus:outline-none"
+                      className="focus:outline-none mt-2"
                     >
-                      
+
                       <img
                         src={message.file_url}
                         className="w-32 h-32 object-cover rounded-lg mb-2 cursor-pointer"
@@ -150,18 +212,26 @@ const GroupArea = () => {
                     </button>
                   )}
 
+
+                  {/* Audio Message */}
+
+                  {message.file_url && isAudio && (
+                    <AudioMessage url={message.file_url} isMine={isMine} />
+                  )}
+
+
                   {/* File Message */}
-                  
+
                   {message.file_url && !isImage && message.file_type && (
-                    
-                    <div className="flex flex-col gap-2">
-                      
-                      <div className="flex items-center gap-3">
+
+                    <div className="flex flex-col gap-2 mt-2">
+
+                      <div className={`flex items-center gap-3 ${isAudio? `hidden` : ``}`}>
                         {getFileIcon(message.file_type)}
 
                         <span className="truncate max-w-[200px] text-sm">
                           {truncateFileName(getFileNameFromUrl(message.file_url))}
-                          
+
                         </span>
                       </div>
 
@@ -179,7 +249,7 @@ const GroupArea = () => {
                           link.click();
                           document.body.removeChild(link);
                         }}
-                        className="cursor-pointer border rounded-lg py-1 text-sm hover:bg-black/10"
+                        className={`cursor-pointer border rounded-lg py-1 text-sm hover:bg-black/10 ${isAudio? `hidden` : ``}`}
                       >
                         Download
                       </button>
@@ -189,7 +259,7 @@ const GroupArea = () => {
                   {/* Text Message */}
                   {message.message_text && (
                     <div>
-                     
+
                       <p className="mt-1">{message.message_text}</p>
 
                     </div>
@@ -197,11 +267,11 @@ const GroupArea = () => {
                   )}
 
                 </div>
-                {isMine? <img src={message.user?.profile} className='w-9 h-9 chat-footer rounded-full object-cover' /> : null}
+                {isMine ? <img src={message.user?.profile} className='w-9 h-9 chat-footer rounded-full object-cover' /> : null}
 
               </div>
 
-             
+
             </div>
 
           </div>

@@ -133,6 +133,68 @@ background: #F5F5FF;
 }
 
 
+.audio-bubble {
+  display: flex;
+  flex-direction: column; /* Changed to column to stack time under bar */
+  padding: 5px 8px;
+  border-radius: 18px; /* Slightly more rectangular for timestamps */
+  width: 260px;
+}
+
+/* Respect your existing chat colors */
+.chat-end .audio-bubble {
+  background: #6200B3;
+}
+
+.chat-start .audio-bubble {
+  background: #ffffff;
+}
+
+.play-btn {
+  flex-shrink: 0; /* Prevents the button from squishing */
+  background-color: transparent ;
+}
+
+.chat-start .play-btn {
+  background: #6200B3;
+  color: white;
+}
+
+.progress {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.chat-start .progress {
+  background: rgba(140, 0, 255, 0.2);
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: rgb(255, 255, 255);
+  border-radius: 999px;
+}
+
+.chat-start .progress-bar {
+  background: #750ce6;
+}
+.chat-start .play-btn {
+    color: #6200B3;
+       /* border-radius: 100%;
+    border-width: 2px; */
+    /* padding: 10px; */
+    /* margin-left: 0;
+    width: 20px;
+    height: 20px; */
+  background: #ffffff;
+}
+
+
+
 .newbg{
 background-color: #ececec;
 /* opacity: 0.1;

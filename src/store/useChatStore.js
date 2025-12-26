@@ -69,6 +69,7 @@ export const useChatStore = create((set, get) => ({
     try {
       const res = await axiosInstance.post("/chat/groupaddpeople",payload);
       const result = res.data;
+      console.log("added new members to group: ", result);
       
     } catch (error) {
       console.log("error while adding new members to group: ", error);

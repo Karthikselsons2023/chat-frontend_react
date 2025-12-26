@@ -190,7 +190,7 @@ const MessageInput = () => {
           <div className="relative p-2 rounded-lg border border-gray-300 flex items-center bg-white">
 
             {attachmentFile.type.startsWith("audio/") ? (
-              <audio controls className="w-40" src={URL.createObjectURL(attachmentFile)} />
+              <audio controls className="w-100" src={URL.createObjectURL(attachmentFile)} />
             ) : previewDetails.mimeType.startsWith('image/') && attachmentPreview ? (
               <img
                 src={attachmentPreview}
