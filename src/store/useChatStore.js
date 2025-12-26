@@ -26,6 +26,11 @@ export const useChatStore = create((set, get) => ({
   isGroupAdmin : false,
   fetchingGroupMessages: false,
   isAddingMembers : false,
+  isSelecting : false,
+
+  setIsSelecting: async (value) => {
+    set({isSelecting: value});
+  },
 
 
   setIsAddingMembers: async (value) => {

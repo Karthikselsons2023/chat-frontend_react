@@ -89,12 +89,24 @@ const ChatArea = () => {
     subscribeToTyping,
     unsubscribeFromTyping,
     isTyping,
+    isSelecting,
+    setIsSelecting
   } = useChatStore();
 
   const { authUser } = useAuthStore();
   const bottomRef = useRef(null);
   const [previewImage, setPreviewImage] = useState(null);
+
+
   const [hoveredMessageId, setHoveredMessageId] = useState(null);
+  const [checkedMessageIds, setCheckedMessageIds] = useState([]);
+  const handleCheckboxChange = (id) => {
+    setCheckedMessageIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((item) => item !== id) // Remove if already there
+        : [...prev, id]                      // Add if not there
+    );
+  };
 
   // Fetch messages
   useEffect(() => {
@@ -198,35 +210,46 @@ const ChatArea = () => {
             onMouseLeave={() => setHoveredMessageId(null)}
             className={`chat ${isMine ? "chat-end" : "chat-start"} `}
           >
-            <div className="chat-header text-black flex items-center mb-1 space-between">
-
-              <time className="text-xs opacity-50 p-1">
+            <div className="chat-header text-black flex items-center mb-1 gap-2">
+              <time className="text-xs opacity-50 mt-2 mb-1">
                 {formatMessageTime(message.created_at)}
               </time>
-
-
               {hoveredMessageId === messageKey && (
                 <div className={`dropdown ${isMine ? 'dropdown-end' : 'dropdown-start'}`}>
                   <div role="button" tabIndex={0} className="hover:bg-[#d7d7d7] rounded-full p-1 cursor-pointer">
                     <EllipsisVertical className="text-[#424242]" size={13} />
                   </div>
-                  <ul tabIndex={0} className="text-xs border-1 border-[#d6beeb] p-1 dropdown-content menu bg-white rounded-box z-[1] w-40 shadow-sm">
+                  <ul tabIndex={0} className="text-xs border border-[#d6beeb] p-1 dropdown-content menu bg-white rounded-box z-[20] w-40 shadow-sm">
                     <li>
                       <a className="text-[#6200B3] flex items-center active:!bg-[#6200B3] active:!text-white focus:bg-[#6200B3] focus:text-white">
-                        <Forward size={15} />
-                        Forward
+                        <button onClick={()=>{setIsSelecting(true)}} className="flex items-center gap-3 cursor-pointer"><Forward size={15} />
+                        Forward</button>
                       </a>
                     </li>
                   </ul>
                 </div>
               )}
-
             </div>
+            {isSelecting === true && (
+              <div className="flex items-center z-10 border-2 rounded-1 border-[#9d53da] rounded-full">
+              <input
+                type="checkbox"
+                id={`check-${messageKey}`}
+                className="checkbox checkbox-xs m-1 
+               border-[#6200B3] 
+               checked:bg-[#6200B3] 
+               checked:border-[#6200B3] 
+               [--chkbg:#6200B3] [--chkfg:white] 
+               cursor-pointer bg-white"
+                checked={checkedMessageIds.includes(message.id)}
+                onChange={() => handleCheckboxChange(message.id)}
+              />
+            </div>)}
 
             <div
               className={`chat-bubble rounded-xl ${isMine
-                  ? "bg-[#6200B3] text-white shadow-2xl"
-                  : "bg-white text-[#6200B3] shadow-4xl"
+                ? "bg-[#6200B3] text-white shadow-2xl"
+                : "bg-white text-[#6200B3] shadow-4xl"
                 }`}
             >
               {/* Image Message */}
