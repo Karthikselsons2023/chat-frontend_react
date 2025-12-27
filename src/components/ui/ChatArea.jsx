@@ -216,7 +216,7 @@ const ChatArea = () => {
             disable={isSelecting === false}
             onMouseEnter={() => setHoveredMessageId(messageKey)}
             onMouseLeave={() => setHoveredMessageId(null)}
-            className={`chat ${isMine ? "chat-end" : "chat-start"} ${selectedChatIds.includes(message.id) ? "bg-[#eed8ff] rounded-lg " : ""} ${isSelecting === true ? "cursor-pointer rounded-xl hover:bg-[#e4e4e4]" : ""}`}
+            className={`chat  ${isMine ? "chat-end" : "chat-start"} ${selectedChatIds.includes(message.id) ? "bg-[#eed8ff] rounded-lg " : ""} ${isSelecting === true ? "cursor-pointer rounded-xl hover:bg-[#e4e4e4]" : ""}`}
           >
             <div className="chat-header text-black flex items-center mb-1 gap-2">
               <time className="text-xs opacity-50 mt-2 mb-1">
@@ -239,20 +239,24 @@ const ChatArea = () => {
               )}
             </div>
             {isSelecting === true && (
-              <div className="flex items-center z-10 border-2 rounded-1 border-[#9d53da] rounded-full">
-              <input
-                type="checkbox"
-                id={`check-${messageKey}`}
-                className="checkbox checkbox-xs m-1 
-               border-[#6200B3] 
-               checked:bg-[#6200B3] 
-               checked:border-[#6200B3] 
-               [--chkbg:#6200B3] [--chkfg:white] 
-               cursor-pointer bg-white"
-                checked={selectedChatIds.includes(message.id)}
-                onChange={() => handleCheckboxChange(message.id)}
-              />
-            </div>)}
+              <div
+                className="flex items-center z-10 border-2 border-[#9d53da] rounded-full"
+                onClick={(e) => e.stopPropagation()}   // 🔥 THIS IS THE FIX
+              >
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-xs m-1 
+      border-[#6200B3] 
+      checked:bg-[#6200B3] 
+      checked:border-[#6200B3] 
+      [--chkbg:#6200B3] [--chkfg:white] 
+      cursor-pointer bg-white"
+                  checked={selectedChatIds.includes(message.id)}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={() => handleCheckboxChange(message.id)}
+                />
+              </div>
+            )}
 
             <div
               className={`chat-bubble rounded-xl ${isMine

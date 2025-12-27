@@ -35,7 +35,13 @@ export const useChatStore = create((set, get) => ({
         ? updater(state.selectedChatIds)
         : updater,
   })),
+  handleForwardMessages: async () => {
+    const { selectedChatIds, clearSelectedChatIds } = get();
+    const authUser = useAuthStore.getState().authUser;
+    if (selectedChatIds.length === 0) return;
+    console.log("forwarding messages to: ", selectedChatIds);
 
+  },
   clearSelectedChatIds: () => {
     set({ selectedChatIds: [] });
   },
