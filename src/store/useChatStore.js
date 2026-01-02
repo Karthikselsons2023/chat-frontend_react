@@ -126,7 +126,10 @@ setIsGroupAdmin: (adminOrNot) => {
     const { selectedUser } = get();
 
     if (!selectedUser) return;
-
+    socket.emit("typing", {
+      senderId: authUser.user_id,
+      receiverId: selectedUser.user_id,
+    });
     
   },
 
