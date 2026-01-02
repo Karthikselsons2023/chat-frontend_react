@@ -1,9 +1,12 @@
+// Global Variables is here 
+
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import io from "socket.io-client";
 
-const SOCKET_URL = "http://localhost:3000"; 
+// const SOCKET_URL = "http://localhost:3000"; 
+const SOCKET_URL = "https://ripplecoin.in"; 
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
