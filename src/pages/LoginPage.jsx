@@ -16,13 +16,13 @@ export default function LoginPage() {
 
     const validateForm = () => {
     if (!formData.email.trim()) {
-      toast.error("phone Number  is required");
+      toast.error("Email is required");
       return false;
     }
-    // if (!/\S+@\S+\.\S+/.test(formData.email)) {
-    //   toast.error("Invalid email format");
-    //   return false;
-    // }
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      toast.error("Invalid email format");
+      return false;
+    }
     if (!formData.password.trim()) {
       toast.error("Password is required");
       return false;
@@ -54,7 +54,7 @@ export default function LoginPage() {
               />
       <form onSubmit={handleSubmit} className='flex flex-col space-y-3 items-center justify-center sm:mt-50 mt-80 mx-5 sm:mx-0'>
         <h1 className='text-3xl inter-large text-black'>Selsons Chat</h1>
-        <input onChange={(e) => setFormData({ ...formData, email: e.target.value })} type="text" placeholder="Enter Phone here..." className="input input-bordered border-2 w-full sm:w-100 bg-transparent border-[#1c1b5c] text-black" />
+        <input onChange={(e) => setFormData({ ...formData, email: e.target.value })} type="text" placeholder="Enter Email here..." className="input input-bordered border-2 w-full sm:w-100 bg-transparent border-[#1c1b5c] text-black" />
         <input onChange={(e) => setFormData({ ...formData, password: e.target.value })} type="text" placeholder="Enter Password here..." className="input input-bordered border-2 w-full sm:w-100 bg-transparent border-[#1c1b5c] text-black" />
         <button type="submit" className="btn btn-primary bg-[#668AFF] border-none rounded-xl w-full sm:w-100">
           {isLoggingIn ? (
