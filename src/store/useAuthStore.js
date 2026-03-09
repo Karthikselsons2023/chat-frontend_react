@@ -23,7 +23,7 @@ fetchAllUsers: async () => {
 
   try {
     const res = await axiosInstance.get("/allusers");
-
+    console.log("Fetch all users response:", res);
     console.log("FETCHED USERS:", res.data); 
 
     set({ allUsers: res.data });
@@ -64,9 +64,14 @@ fetchAllUsers: async () => {
 
   logout: async () => {
     try {
-      await axiosInstance.post("/auth/logout");
+     const res = await axiosInstance.post("/auth/logout");
+     console.log("Logout response:", res);
+        toast.success(res.data.message || "Logged out");
       get().disconnectSocket();
-      set({ authUser: null, onlineUsers: [] });
+      set({ 
+        authUser: null, 
+        onlineUsers: [], 
+      }); 
     } catch (err) {
       toast.error("Logout failed");
     }
